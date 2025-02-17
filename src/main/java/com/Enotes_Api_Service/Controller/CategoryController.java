@@ -1,5 +1,7 @@
 package com.Enotes_Api_Service.Controller;
 
+import com.Enotes_Api_Service.Dto.CategoryDto;
+import com.Enotes_Api_Service.Dto.CategoryResponse;
 import com.Enotes_Api_Service.Entity.Category;
 import com.Enotes_Api_Service.Service.CategoryService;
 import lombok.extern.slf4j.Slf4j;
@@ -18,21 +20,34 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
     @PostMapping("/save-category")
-    public ResponseEntity<?> saveCategory(@RequestBody  Category category){
-        Boolean saveCategory = categoryService.saveCategory(category);
-        if (saveCategory){
-            log.info("Category saved successfully :- "+saveCategory);
-            return  new ResponseEntity<>("Category saved successfully", HttpStatus.CREATED);
-        }
-        else {
-            log.error("Error occurred while saving category :- "+saveCategory);
-            return  new ResponseEntity<>("Error occurred while saving category", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<String> saveCategory(@RequestBody CategoryDto categoryDto) {
+        boolean isSaved = categoryService.saveCategory(categoryDto);
+        if (isSaved) {
+            log.info("Category saved successfully");
+            return ResponseEntity.status(HttpStatus.CREATED).body("Category saved successfully");
+        } else {
+            log.error("Error occurred while saving category");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while saving category");
         }
     }
 
-    @GetMapping("/getALL")
+
+    @GetMapping("/getAll")
     public ResponseEntity<List<?>> getALlCategoryList(){
-        List<Category> categoryList = categoryService.AllCategories();
+        List<CategoryDto> categoryList = categoryService.AllCategories();
+        if (CollectionUtils.isEmpty(categoryList)){
+            log.info("No category found");
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        else {
+            log.info("All category list fetched successfully :- "+categoryList);
+            return new ResponseEntity<>(categoryList, HttpStatus.OK);
+        }
+    }
+
+    @GetMapping("/getAllActiveCategories")
+    public ResponseEntity<List<?>> getALlActiveCategoryList(){
+        List<CategoryResponse> categoryList = categoryService.AllActiveCategories();
         if (CollectionUtils.isEmpty(categoryList)){
             log.info("No category found");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);

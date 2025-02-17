@@ -1,18 +1,19 @@
-package com.Enotes_Api_Service.Entity;
+package com.Enotes_Api_Service.Dto;
 
-import jakarta.persistence.MappedSuperclass;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@MappedSuperclass
-public class BaseModel {
+public class CategoryDto {
+    private Integer id;
+    private String name;
+    private String description;
     private Boolean isActive;
-    private Boolean isDeleted;
     private Integer createdBy;
     private Date createdDate;
     private Integer updatedBy;
