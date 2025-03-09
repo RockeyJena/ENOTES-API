@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -57,5 +58,30 @@ public class CategoryController {
             return new ResponseEntity<>(categoryList, HttpStatus.OK);
         }
     }
+    @GetMapping("/{id}")
+    public ResponseEntity<?> CategoryDetailsByID(@PathVariable Integer id) {
+        CategoryDto categoryId = categoryService.CategoryDetailsByID(id);
+       if (ObjectUtils.isEmpty(categoryId)) {
+           log.info("No category found for id : " + id);
+           return new ResponseEntity<>("No category found for id "+id,HttpStatus.NOT_FOUND);
+       }
+       else {
+           log.info("Category details fetched successfully for id : " + id + " :- " + categoryId);
+           return new ResponseEntity<>(categoryId, HttpStatus.OK);
+       }
+    }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteCategoryDetailsByID(@PathVariable Integer id) {
+      Boolean delate = categoryService.CategoryDelateByID(id);
+        if (delate) {
+            log.info("No category found  delete for id : " + id);
+            return new ResponseEntity<>(" category   delete id sucessFully  "+id,HttpStatus.OK);
+        }
+        else {
+            log.info("Category details fetched successfully for id : " + id + " :- " + delate);
+            return new ResponseEntity<>("Category Not Deleted By Id :- ", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    /// 7 get delete
 
 }
