@@ -11,4 +11,8 @@ public Boolean saveCategory(CategoryDto categoryDto);
 public List<CategoryDto>AllCategories();
 
     List<CategoryResponse> AllActiveCategories();
+
+    CategoryDto CategoryDetailsByID(Integer id);
+
+    Boolean CategoryDelateByID(Integer id);
 }

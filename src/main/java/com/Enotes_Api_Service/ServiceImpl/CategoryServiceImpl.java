@@ -10,9 +10,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -24,11 +24,15 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public Boolean saveCategory(CategoryDto categoryDto) {
-
         Category category = mapper.map(categoryDto, Category.class);
-        category.setCreatedDate(new Date());
-        category.setIsDeleted(false);
-        category.setCreatedBy(1); 
+        if (ObjectUtils.isEmpty(category.getId())) {
+            category.setCreatedDate(new Date());
+            category.setIsDeleted(false);
+            category.setCreatedBy(1);
+        }
+        else {
+            updateCategory(category);
+        }
 
         Category savedCategory = categoryRepository.save(category);
 
@@ -36,10 +40,38 @@ public class CategoryServiceImpl implements CategoryService {
             log.error("Error while saving category: {}", categoryDto);
             return false;
         }
-
         log.info("Category saved successfully: {}", savedCategory);
         return true;
     }
+
+    private void updateCategory(Category category) {
+        Optional<Category> repositoryById = categoryRepository.findById(category.getId());
+        if (repositoryById.isPresent()) {
+            Category existingCategory = repositoryById.get();
+
+            // Update only non-null values
+            if (category.getName() != null) {
+                existingCategory.setName(category.getName());
+            }
+            if (category.getDescription() != null) {
+                existingCategory.setDescription(category.getDescription());
+            }
+            if (category.getIsActive() != null) {
+                existingCategory.setIsActive(category.getIsActive());
+            }
+
+            // Preserve audit fields
+            category.setCreatedBy(existingCategory.getCreatedBy());
+            category.setCreatedDate(existingCategory.getCreatedDate());
+            category.setIsDeleted(existingCategory.getIsDeleted());
+            category.setUpdatedBy(1);
+            category.setUpdatedOn(new Date());
+
+            // Save updated entity
+            categoryRepository.save(existingCategory);
+        }
+    }
+
 
 
     @Override
@@ -56,5 +88,29 @@ public class CategoryServiceImpl implements CategoryService {
         List<CategoryResponse> list = categoryList.stream().map(category -> mapper.map(category, CategoryResponse.class)).toList();
             log.info(" Category response data ,{} "+list);
         return list;
+    }
+
+    @Override
+    public CategoryDto CategoryDetailsByID(Integer id) {
+        Optional<Category> category = categoryRepository.findByIdAndIsDeletedFalse(id);
+        if (category.isPresent()) {
+            CategoryDto categoryDto = mapper.map(category.get(), CategoryDto.class);
+            log.info("Category details by id: {}", categoryDto);
+            return categoryDto;
+        }
+        return null;
+    }
+
+    @Override
+    public Boolean CategoryDelateByID(Integer id) {
+        Optional<Category> categoryRepositoryById = categoryRepository.findById(id);
+if (categoryRepositoryById.isPresent()) {
+    Category category = categoryRepositoryById.get();
+    category.setIsDeleted(true);
+    categoryRepository.save(category);
+  log.info("Category delete successfully: " + category);
+    return true;
+}
+        return false;
     }
 }
